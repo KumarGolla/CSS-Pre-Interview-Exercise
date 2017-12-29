@@ -1,4 +1,5 @@
-TemplateFormatVersion": "2010-09-09",
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "This template creates two IAM roles and creates an S3 bucket with a bucket policy such that, the bucket can only be managed via the first role and the bucket can be accessed (read and write) via the second role ",
   "Parameters": {
     "BucketName": {
