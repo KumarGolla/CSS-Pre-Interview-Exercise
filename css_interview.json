@@ -1,0 +1,117 @@
+TemplateFormatVersion": "2010-09-09",
+  "Description": "This template creates two IAM roles and creates an S3 bucket with a bucket policy such that, the bucket can only be managed via the first role and the bucket can be accessed (read and write) via the second role ",
+  "Parameters": {
+    "BucketName": {
+      "Description": "Name of the s3 Bucket",
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Bucket Name should be identical."
+    },
+    "Role1": {
+      "Description": "Name of the Role that need to manage the S3 bucket",
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Please enter a valid name."
+    },
+    "Role2": {
+      "Description": "Name of the Role that can read and write the S3 bucket",
+      "Type": "String",
+      "Default": "",
+      "ConstraintDescription": "Please enter a valid name."
+    }
+  },
+
+  "Resources": {
+    "NewRole1": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Ref": "Role1"
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "s3.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        }
+      }
+    },
+    "NewRole2": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Ref": "Role2"
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "s3.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        }
+      }
+    },
+    "MyNewS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Ref": "BucketName"
+        }
+      }
+    },
+    "BucketPolicy01": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [{
+            "Action": ["s3:*"],
+            "Effect": "Allow",
+            "Resource": [{ "Fn::Join": ["", [ "arn:aws:s3:::", { "Ref": "BucketName" } ]] }]
+          }]
+        },
+        "PolicyName": "Role01BucketPolicy",
+        "Roles": [{ "Ref": "Role1" }]
+      }
+    },
+    "BucketPolicy02": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [{
+            "Action": [
+              "s3:ListBucket"
+              ],
+            "Effect": "Allow",
+            "Resource": [{ "Fn::Join": ["", [ "arn:aws:s3:::", { "Ref": "BucketName" } ]] }]
+            },
+            {
+            "Action": [
+              "s3:GetObject",
+              "s3:PutObject",
+              "s3:DeleteObject"
+              ],
+            "Effect": "Allow",
+            "Resource": [{ "Fn::Join": ["", [ "arn:aws:s3:::", { "Ref": "BucketName" }, "/*" ]] }]
+          }]
+        },
+        "PolicyName": "Role02BucketPolicy",
+        "Roles": [{ "Ref": "Role2" }]
+      }
+    }
+  }
+}
